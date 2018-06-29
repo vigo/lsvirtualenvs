@@ -35,14 +35,16 @@ Options:
   -c, --color     Enable color output
   -s, --simple    Just list environment names
   -i, --index     Add index number to output
+      --version   Version information
 
 Examples:
 
   lsvirtualenvs -h
+  lsvirtualenvs --version
   lsvirtualenvs -c
   lsvirtualenvs --color
   lsvirtualenvs -c -i
-  lsvirtualenvs --coloer --index
+  lsvirtualenvs --color --index
   lsvirtualenvs -s
   lsvirtualenvs -simple
 
@@ -50,6 +52,7 @@ Examples:
 	optionsColorOutput  *bool
 	optionsSimpleOutput *bool
 	optionsIndexEnabled *bool
+	optionsVersion      *bool
 	indexDigits         int
 )
 
@@ -85,7 +88,14 @@ func main() {
 	optionsIndexEnabled = flag.Bool("index", false, "")
 	flag.BoolVar(optionsIndexEnabled, "i", false, "")
 
+	optionsVersion = flag.Bool("version", false, "")
+
 	flag.Parse()
+
+	if *optionsVersion {
+		fmt.Fprint(os.Stdout, fmt.Sprintf("%s\n", VERSION))
+		os.Exit(0)
+	}
 
 	workonHome := os.Getenv("WORKON_HOME")
 	if workonHome == "" {
@@ -186,7 +196,5 @@ func main() {
 		} else {
 			fmt.Printf("%v %v\n", rightPadding(envName, padOffset), pythonVersionStr)
 		}
-
 	}
-	fmt.Println("\n")
 }
