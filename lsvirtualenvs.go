@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	VERSION      = "0.1.0"
 	COLOR_GREEN  = "\x1b[32m"
 	COLOR_YELLOW = "\x1b[33m"
 	COLOR_WHITE  = "\x1b[37m"
@@ -24,25 +25,28 @@ const (
 
 var (
 	usage = `
-	Usage: lsvirtualenvs [options...]
+Usage: lsvirtualenvs [options...]
 
-	List available virtualenvironments created by virtualenvwrapper.
+List available virtualenvironments created by virtualenvwrapper.
 
-	Options:
+Options:
 
-	  -h      Help :)
-	  -color  Enable color output
-	  -simple Just list names
-	  -index  Add index number
+  -h, --help      Display help! :)
+  -c, --color     Enable color output
+  -s, --simple    Just list environment names
+  -i, --index     Add index number to output
 
-	Examples:
-  
-	  lsvirtualenvs -h
-	  lsvirtualenvs -color
-	  lsvirtualenvs -color -index
-	  lsvirtualenvs -simple -index
+Examples:
 
-	`
+  lsvirtualenvs -h
+  lsvirtualenvs -c
+  lsvirtualenvs --color
+  lsvirtualenvs -c -i
+  lsvirtualenvs --coloer --index
+  lsvirtualenvs -s
+  lsvirtualenvs -simple
+
+`
 	optionsColorOutput  *bool
 	optionsSimpleOutput *bool
 	optionsIndexEnabled *bool
@@ -69,24 +73,29 @@ func calculateIndex(number int) string {
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprint(os.Stderr, fmt.Sprintf(usage))
+		fmt.Fprint(os.Stderr, usage)
 	}
 
 	optionsColorOutput = flag.Bool("color", false, "")
+	flag.BoolVar(optionsColorOutput, "c", false, "")
+
 	optionsSimpleOutput = flag.Bool("simple", false, "")
+	flag.BoolVar(optionsSimpleOutput, "s", false, "")
+
 	optionsIndexEnabled = flag.Bool("index", false, "")
+	flag.BoolVar(optionsIndexEnabled, "i", false, "")
 
 	flag.Parse()
 
 	workonHome := os.Getenv("WORKON_HOME")
 	if workonHome == "" {
-		fmt.Println("$WORKON_HOME does't exists in your environment!")
+		fmt.Fprint(os.Stderr, "$WORKON_HOME does't exists in your environment!")
 		os.Exit(1)
 	}
 
 	files, err := ioutil.ReadDir(workonHome)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}
 
@@ -133,6 +142,11 @@ func main() {
 	}
 	sort.Strings(keys)
 
+	if *optionsSimpleOutput {
+		fmt.Println(strings.Join(keys[:], "\n"))
+		os.Exit(0)
+	}
+
 	envLength := len(keys)
 	envAmountStr := "environment"
 	if envLength > 1 {
@@ -149,19 +163,23 @@ func main() {
 		indexDigits = 8
 	}
 
-	outHeader := "\nYou have %s %s available!\n\n"
+	if !*optionsSimpleOutput {
+		outHeader := "\nYou have %s %s available!\n\n"
 
-	if *optionsColorOutput {
-		fmt.Printf(outHeader, colorPrint(COLOR_YELLOW, strconv.Itoa(envLength)), envAmountStr)
-	} else {
-		fmt.Printf(outHeader, strconv.Itoa(envLength), envAmountStr)
+		if *optionsColorOutput {
+			fmt.Printf(outHeader, colorPrint(COLOR_YELLOW, strconv.Itoa(envLength)), envAmountStr)
+		} else {
+			fmt.Printf(outHeader, strconv.Itoa(envLength), envAmountStr)
+		}
 	}
 
 	for index, envName := range keys {
 		pythonVersionStr := result[envName]
+
 		if *optionsColorOutput {
 			pythonVersionStr = colorPrint(COLOR_WHITE, result[envName])
 		}
+
 		if *optionsIndexEnabled {
 			needIndex := calculateIndex(index)
 			fmt.Printf("%s %v %v\n", needIndex, rightPadding(envName, padOffset), pythonVersionStr)
