@@ -193,9 +193,20 @@ sys     0m0.110s
 
 Blazing fast :)
 
+Run tests via;
+
+```bash
+$ go test -v
+
+```
+
 ---
 
 ## Change Log
+
+**2018-07-02**
+
+* Basic unit testing
 
 **2018-07-01**
 
