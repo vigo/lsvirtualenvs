@@ -60,7 +60,7 @@ Examples:
 )
 
 const (
-	VERSION = "0.1.0"
+	VERSION = "0.1.1"
 
 	COLOR_RED     = "\x1b[31m"
 	COLOR_GREEN   = "\x1b[32m"

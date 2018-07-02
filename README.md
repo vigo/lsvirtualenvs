@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.1.0-yellow.svg)
+![Version](https://img.shields.io/badge/version-0.1.1-yellow.svg)
 
 # List Virtual Environments for `virtualenvwrapper`
 
@@ -160,8 +160,7 @@ Let’s try with `lsvirtualenvs`:
 
 ```bash
 $ time lsvirtualenvs
-
-You have 22 environments available!
+You have 22 virtualenvs available
 
 [biges-training-django-cbv] ............ 3.6.3
 [bilgi.edu.tr] ......................... 2.7.13
@@ -186,11 +185,9 @@ You have 22 environments available!
 [training-django-101-py3-blog-app] ..... 3.6.0
 [training-django-cbv-example] .......... 3.6.0
 
-
-
-real    0m0.288s
-user    0m0.092s
-sys     0m0.118s
+real    0m0.266s
+user    0m0.091s
+sys     0m0.110s
 
 ```
 
@@ -199,6 +196,10 @@ Blazing fast :)
 ---
 
 ## Change Log
+
+**2018-07-01**
+
+* Code refactor
 
 **2018-06-29**
 
