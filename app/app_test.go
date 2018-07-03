@@ -21,7 +21,7 @@ func TestAppVersion(t *testing.T) {
 		cmd.out = buff
 		cmd.Run()
 
-		want := "2.0.0"
+		want := appVersion
 		got := fmt.Sprintf("%s", bytes.TrimSpace(buff.Bytes()))
 		if want != got {
 			t.Errorf("\nwant: %s\n got: %s\n\n", want, got)
