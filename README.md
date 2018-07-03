@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.1.1-yellow.svg)
+![Version](https://img.shields.io/badge/version-2.0.1-yellow.svg)
 
 # List Virtual Environments for `virtualenvwrapper`
 
@@ -6,7 +6,12 @@ If you use `virtualenvwrapper` you’ll love this :)
 
 Due `virtualenvwrapper`’s `lsvirtualenv` super slow speed and lack of information,
 I made this simple command in `golang`. This is also my newbie work in Golang.
-Thanks to [Ahmet Aygün](https://github.com/ahmet) for showing me `sync.WaitGroup` :)
+
+Thanks to 
+
+- [Ahmet Aygün](https://github.com/ahmet) for showing me `sync.WaitGroup` :)
+- [Fatih Arslan](https://github.com/fatih) for guiding me about testing and 
+  `io.Writer` and application structure
 
 ## Requirements
 
@@ -196,13 +201,19 @@ Blazing fast :)
 Run tests via;
 
 ```bash
-$ go test -v
+$ go test -v ./...
 
 ```
 
 ---
 
 ## Change Log
+
+**2018-07-04**
+
+* App refactored
+* Unit tests are completed
+* Version 2.0.1
 
 **2018-07-02**
 

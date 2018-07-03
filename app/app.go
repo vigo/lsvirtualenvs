@@ -1,16 +1,11 @@
-/*
-
-	Build with: go version go1.10.3 darwin/amd64
-	Created by Uğur "vigo" Özyılmazel on 2018-07-01.
-
-*/
-package main
+package app
 
 import (
 	"bytes"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -20,7 +15,28 @@ import (
 	"sync"
 )
 
+const (
+	appVersion   = "2.0.1"
+	colorRed     = "\x1b[31m"
+	colorGreen   = "\x1b[32m"
+	colorYellow  = "\x1b[33m"
+	colorBlue    = "\x1b[34m"
+	colorMagenta = "\x1b[35m"
+	colorCyan    = "\x1b[36m"
+	colorWhite   = "\x1b[37m"
+	colorGray    = "\x1b[38m"
+	colorReset   = "\x1b[0m"
+)
+
 var (
+	cmdOptionVersionInfo  *bool
+	cmdOptionSimpleOutput *bool
+	cmdOptionColorOutput  *bool
+	cmdOptionIndexEnabled *bool
+	maxIndexDigits        int
+	outputHeader          = `You have %s %s available
+
+`
 	usage = `
 Usage: lsvirtualenvs [options...]
 
@@ -47,77 +63,76 @@ Examples:
   lsvirtualenvs -simple
 
 `
-
-	cmdOptionColorOutput  *bool
-	cmdOptionSimpleOutput *bool
-	cmdOptionIndexEnabled *bool
-	cmdOptionVersionInfo  *bool
-	maxIndexDigits        int
-
-	outputHeader = `You have %s %s available
-
-`
 )
 
-const (
-	VERSION = "0.1.1"
+type CmdApp struct {
+	out io.Writer
+}
 
-	COLOR_RED     = "\x1b[31m"
-	COLOR_GREEN   = "\x1b[32m"
-	COLOR_YELLOW  = "\x1b[33m"
-	COLOR_BLUE    = "\x1b[34m"
-	COLOR_MAGENTA = "\x1b[35m"
-	COLOR_CYAN    = "\x1b[36m"
-	COLOR_WHITE   = "\x1b[37m"
-	COLOR_GRAY    = "\x1b[38m"
-
-	COLOR_RESET = "\x1b[0m"
-)
-
-// init implements commandline flag parsing
 func init() {
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, usage)
 	}
+	cmdOptionVersionInfo = flag.Bool("version", false, "Current version information")
 
-	cmdOptionColorOutput = flag.Bool("color", false, "")
-	flag.BoolVar(cmdOptionColorOutput, "c", false, "")
-
-	cmdOptionSimpleOutput = flag.Bool("simple", false, "")
+	cmdOptionSimpleOutput = flag.Bool("simple", false, "Just list environment names, overrides -c, -i")
 	flag.BoolVar(cmdOptionSimpleOutput, "s", false, "")
 
-	cmdOptionIndexEnabled = flag.Bool("index", false, "")
+	cmdOptionColorOutput = flag.Bool("color", false, "Enable color output")
+	flag.BoolVar(cmdOptionColorOutput, "c", false, "")
+
+	cmdOptionIndexEnabled = flag.Bool("index", false, "Add index number to output")
 	flag.BoolVar(cmdOptionIndexEnabled, "i", false, "")
 
-	cmdOptionVersionInfo = flag.Bool("version", false, "")
 	flag.Parse()
+}
+
+// LsVirtualenvsApp is the core application
+func LsVirtualenvsApp() *CmdApp {
+	return &CmdApp{
+		out: os.Stdout,
+	}
+}
+
+// Version returns the current version of LsVirtualenvsApp
+func (m *CmdApp) Version() error {
+	fmt.Fprintf(m.out, "%s\n", appVersion)
+	return nil
+}
+
+// Run implements LsVirtualenvsApp to run!
+func (m *CmdApp) Run() error {
+	if *cmdOptionVersionInfo {
+		return m.Version()
+	}
+	return m.GetVirtualenvs()
+}
+
+// GetEnvOrDie takes environment name as string and returns
+// given environment name's value. If environment doesn't exists
+// error returns.
+func (m *CmdApp) GetEnvOrDie(envVarName string) (string, error) {
+	envVal := os.Getenv(envVarName)
+	if envVal == "" {
+		return "", errors.New(fmt.Sprintf("%s doesn't exists in your environment!", envVarName))
+	}
+	return envVal, nil
 }
 
 // printColorf implements terminal friendly color output if
 // color enable flag is set!
-func printColorf(text string, color string) string {
+func (m *CmdApp) PrintColorf(text string, color string) string {
 	if *cmdOptionColorOutput {
-		return fmt.Sprintf("%s%s%s", color, text, COLOR_RESET)
+		return fmt.Sprintf("%s%s%s", color, text, colorReset)
 	} else {
 		return text
 	}
-
-}
-
-// checkEnvVar checks given environment variable if exists
-// returns error unless exists
-func checkEnvVar(envVar string) (string, error) {
-	v := os.Getenv(envVar)
-	if v == "" {
-		return "", errors.New("$WORKON_HOME does't exists in your environment!")
-	}
-	return v, nil
 }
 
 // pluralize implements a quick and dirty pluralize process
 // if you pass plural version as "s" only, output will be
 // suffixed with "s" infront of singular version of text.
-func pluralize(singular string, plural string, amount int) string {
+func (m *CmdApp) Pluralize(singular string, plural string, amount int) string {
 	out := singular
 	if amount > 1 {
 		if plural == "s" {
@@ -131,38 +146,32 @@ func pluralize(singular string, plural string, amount int) string {
 
 // dynamicDigitPadding implements dynamic string format with
 // digit padding
-func dynamicDigitPadding(number int) string {
+func (m *CmdApp) DynamicDigitPadding(number int) string {
 	return fmt.Sprintf("%0*d", maxIndexDigits, number+1)
 }
 
 // rightPaddingWithChar implements padding for given length with given padding
-// character.
-func rightPaddingWithChar(text string, length int, padChar string, format string) string {
+// character. If padChar is not provided, function uses "." as default.
+func (m *CmdApp) RightPaddingWithChar(text string, length int, padChar string, format string) string {
 	if padChar == "" {
 		padChar = "."
 	}
-
 	repeatingChars := strings.Repeat(padChar, length-len(text))
 	return fmt.Sprintf(format, text, repeatingChars)
 }
 
-func main() {
-	if *cmdOptionVersionInfo {
-		fmt.Fprint(os.Stdout, fmt.Sprintf("%s\n", VERSION))
-		os.Exit(0)
-	}
-
-	envWorkonHome, err := checkEnvVar("WORKON_HOME")
+// GetVirtualenvs implements fetching virtualenv names and related
+// Python versions. Checks "WORKON_HOME" environment variable first,
+// the checks if the required folder exists.
+func (m *CmdApp) GetVirtualenvs() error {
+	currentWorkingDir, err := m.GetEnvOrDie("WORKON_HOME")
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
-		os.Exit(1)
+		return err
 	}
-
-	// read all files under envWorkonHome
-	filesList, err := ioutil.ReadDir(envWorkonHome)
+	// fmt.Fprintf(m.out, "%v", currentWorkingDir)
+	filesList, err := ioutil.ReadDir(currentWorkingDir)
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
-		os.Exit(1)
+		return err
 	}
 
 	var wg sync.WaitGroup
@@ -179,7 +188,7 @@ func main() {
 				lock.Lock()
 				defer lock.Unlock()
 
-				pythonBinPath := fmt.Sprintf("%s/%s/bin/python", envWorkonHome, dirName)
+				pythonBinPath := fmt.Sprintf("%s/%s/bin/python", currentWorkingDir, dirName)
 				bashCommand := fmt.Sprintf("%s --version 2>&1", pythonBinPath)
 				pythonVersion, err := exec.Command("bash", "-c", bashCommand).Output()
 
@@ -196,6 +205,7 @@ func main() {
 	wg.Wait()
 
 	var keysOfVirtualEnvsList []string
+
 	longestKeylength := ""
 	for key := range virtualEnvsList {
 		keysOfVirtualEnvsList = append(keysOfVirtualEnvsList, key)
@@ -207,15 +217,15 @@ func main() {
 	lengthOfEnvironments := len(keysOfVirtualEnvsList)
 
 	if *cmdOptionSimpleOutput {
-		fmt.Println(strings.Join(keysOfVirtualEnvsList[:], "\n"))
-		os.Exit(0)
+		fmt.Fprintf(m.out, "%s", strings.Join(keysOfVirtualEnvsList[:], "\n"))
+		return nil
 	}
 
-	fmt.Printf(outputHeader,
-		printColorf(strconv.Itoa(lengthOfEnvironments), COLOR_YELLOW),
-		fmt.Sprintf(
-			"%s",
-			pluralize("virtualenv", "s", lengthOfEnvironments)))
+	fmt.Fprintf(
+		m.out,
+		outputHeader,
+		m.PrintColorf(strconv.Itoa(lengthOfEnvironments), colorYellow),
+		fmt.Sprintf("%s", m.Pluralize("virtualenv", "s", lengthOfEnvironments)))
 
 	var computedResult []string
 
@@ -236,19 +246,22 @@ func main() {
 	for index, environmentName := range keysOfVirtualEnvsList {
 		indexString := ""
 		if *cmdOptionIndexEnabled {
-			indexString = fmt.Sprintf("%s ", printColorf(dynamicDigitPadding(index), COLOR_GREEN))
+			indexString = fmt.Sprintf("%s ", m.PrintColorf(m.DynamicDigitPadding(index), colorGreen))
 		}
 		appendValue := fmt.Sprintf(
 			"%s%s %s",
 			indexString,
-			rightPaddingWithChar(
+			m.RightPaddingWithChar(
 				environmentName,
 				len(longestKeylength)+5, "",
-				fmt.Sprintf("[%s] %s", printColorf("%s", COLOR_YELLOW), printColorf("%s", COLOR_GRAY))),
-			printColorf(virtualEnvsList[environmentName], COLOR_WHITE))
+				fmt.Sprintf(
+					"[%s] %s",
+					m.PrintColorf("%s", colorYellow),
+					m.PrintColorf("%s", colorGray))),
+			m.PrintColorf(virtualEnvsList[environmentName], colorWhite))
 		computedResult = append(computedResult, appendValue)
 	}
 
-	fmt.Println(strings.Join(computedResult[:], "\n"))
-	os.Exit(0)
+	fmt.Fprintf(m.out, fmt.Sprintf("%s\n", strings.Join(computedResult[:], "\n")))
+	return nil
 }
