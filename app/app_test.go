@@ -3,7 +3,6 @@ package app
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"testing"
 )
 
@@ -44,27 +43,6 @@ func TestColorPrint(t *testing.T) {
 		want := "\x1b[31mHello\x1b[0m"
 		got := cmd.PrintColorf("Hello", colorRed)
 
-		if want != got {
-			t.Errorf("\nwant: %s\n got: %s\n\n", want, got)
-		}
-	})
-}
-
-func TestGetEnvOrDie(t *testing.T) {
-	t.Parallel()
-	t.Run("FAKE_FOO_BAR env-var raise an error", func(t *testing.T) {
-		want := "FAKE_FOO_BAR doesn't exists in your environment!"
-		_, err := cmd.GetEnvOrDie("FAKE_FOO_BAR")
-		got := fmt.Sprintf("%s", err)
-		if want != got {
-			t.Errorf("\nwant: %s\n got: %s\n\n", want, got)
-		}
-	})
-	t.Run("FAKEISH_FOO_BAR env-var should return: BAZ", func(t *testing.T) {
-		os.Setenv("FAKEISH_FOO_BAR", "BAZ")
-
-		want := "BAZ"
-		got, _ := cmd.GetEnvOrDie("FAKEISH_FOO_BAR")
 		if want != got {
 			t.Errorf("\nwant: %s\n got: %s\n\n", want, got)
 		}

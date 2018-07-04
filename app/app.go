@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	appVersion   = "2.0.1"
+	appVersion   = "2.1.0"
 	colorRed     = "\x1b[31m"
 	colorGreen   = "\x1b[32m"
 	colorYellow  = "\x1b[33m"
@@ -69,7 +69,8 @@ type CmdApp struct {
 	out io.Writer
 }
 
-func init() {
+// LsVirtualenvsApp is the core application
+func LsVirtualenvsApp() *CmdApp {
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, usage)
 	}
@@ -85,10 +86,7 @@ func init() {
 	flag.BoolVar(cmdOptionIndexEnabled, "i", false, "")
 
 	flag.Parse()
-}
 
-// LsVirtualenvsApp is the core application
-func LsVirtualenvsApp() *CmdApp {
 	return &CmdApp{
 		out: os.Stdout,
 	}
@@ -106,17 +104,6 @@ func (m *CmdApp) Run() error {
 		return m.Version()
 	}
 	return m.GetVirtualenvs()
-}
-
-// GetEnvOrDie takes environment name as string and returns
-// given environment name's value. If environment doesn't exists
-// error returns.
-func (m *CmdApp) GetEnvOrDie(envVarName string) (string, error) {
-	envVal := os.Getenv(envVarName)
-	if envVal == "" {
-		return "", errors.New(fmt.Sprintf("%s doesn't exists in your environment!", envVarName))
-	}
-	return envVal, nil
 }
 
 // printColorf implements terminal friendly color output if
@@ -164,11 +151,12 @@ func (m *CmdApp) RightPaddingWithChar(text string, length int, padChar string, f
 // Python versions. Checks "WORKON_HOME" environment variable first,
 // the checks if the required folder exists.
 func (m *CmdApp) GetVirtualenvs() error {
-	currentWorkingDir, err := m.GetEnvOrDie("WORKON_HOME")
-	if err != nil {
-		return err
+	lookup := "WORKON_HOME"
+	currentWorkingDir, envExists := os.LookupEnv(lookup)
+	if !envExists {
+		return errors.New(fmt.Sprintf("%s doesn't exists in your environment!", lookup))
 	}
-	// fmt.Fprintf(m.out, "%v", currentWorkingDir)
+
 	filesList, err := ioutil.ReadDir(currentWorkingDir)
 	if err != nil {
 		return err
@@ -185,11 +173,10 @@ func (m *CmdApp) GetVirtualenvs() error {
 
 			go func(dirName string) {
 				defer wg.Done()
-				lock.Lock()
-				defer lock.Unlock()
 
 				pythonBinPath := fmt.Sprintf("%s/%s/bin/python", currentWorkingDir, dirName)
 				bashCommand := fmt.Sprintf("%s --version 2>&1", pythonBinPath)
+
 				pythonVersion, err := exec.Command("bash", "-c", bashCommand).Output()
 
 				if err != nil {
@@ -197,8 +184,10 @@ func (m *CmdApp) GetVirtualenvs() error {
 				} else {
 					pythonVersion = bytes.TrimSpace(pythonVersion)
 				}
-				virtualEnvsList[dirName] = strings.Split(fmt.Sprintf("%s", pythonVersion), " ")[1]
 
+				lock.Lock()
+				virtualEnvsList[dirName] = strings.Split(fmt.Sprintf("%s", pythonVersion), " ")[1]
+				defer lock.Unlock()
 			}(file.Name())
 		}
 	}
