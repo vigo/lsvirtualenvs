@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	appVersion   = "2.1.0"
+	appVersion   = "2.1.1"
 	colorRed     = "\x1b[31m"
 	colorGreen   = "\x1b[32m"
 	colorYellow  = "\x1b[33m"
@@ -29,6 +29,7 @@ const (
 )
 
 var (
+	virtualEnvsListMap    sync.Map
 	cmdOptionVersionInfo  *bool
 	cmdOptionSimpleOutput *bool
 	cmdOptionColorOutput  *bool
@@ -163,7 +164,6 @@ func (m *CmdApp) GetVirtualenvs() error {
 	}
 
 	var wg sync.WaitGroup
-	var lock = sync.RWMutex{}
 
 	virtualEnvsList := make(map[string]string)
 
@@ -184,14 +184,17 @@ func (m *CmdApp) GetVirtualenvs() error {
 				} else {
 					pythonVersion = bytes.TrimSpace(pythonVersion)
 				}
-
-				lock.Lock()
-				virtualEnvsList[dirName] = strings.Split(fmt.Sprintf("%s", pythonVersion), " ")[1]
-				defer lock.Unlock()
+				virtualEnvsListMap.Store(dirName, strings.Split(fmt.Sprintf("%s", pythonVersion), " ")[1])
 			}(file.Name())
 		}
 	}
 	wg.Wait()
+
+	virtualEnvsListMap.Range(func(ki, vi interface{}) bool {
+		k, v := ki.(string), vi.(string)
+		virtualEnvsList[k] = v
+		return true
+	})
 
 	var keysOfVirtualEnvsList []string
 

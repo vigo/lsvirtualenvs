@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-2.1.0-yellow.svg)
+![Version](https://img.shields.io/badge/version-2.1.1-yellow.svg)
 [![Build Status](https://travis-ci.org/vigo/lsvirtualenvs.svg?branch=master)](https://travis-ci.org/vigo/lsvirtualenvs)
 
 # List Virtual Environments for `virtualenvwrapper`
@@ -191,9 +191,9 @@ You have 22 virtualenvs available
 [training-django-101-py3-blog-app] ..... 3.6.0
 [training-django-cbv-example] .......... 3.6.0
 
-real    0m0.266s
-user    0m0.091s
-sys     0m0.110s
+real    0m0.076s
+user    0m0.124s
+sys     0m0.230s
 
 ```
 
@@ -209,6 +209,11 @@ $ go test -v ./...
 ---
 
 ## Change Log
+
+**2018-07-05**
+
+* Due to @fatih’s warning, removed `Lock()` and used `sync.Map()`
+* Version 2.1.1
 
 **2018-07-04**
 
