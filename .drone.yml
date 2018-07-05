@@ -1,0 +1,33 @@
+workspace:
+  base: /go
+  path: src/github.com/vigo/lsvirtualenvs
+
+pipeline:
+  build:
+    image: golang:latest
+    commands:
+      - go test -v ./...
+    when:
+      event:
+        - push
+  slack:
+    image: plugins/slack
+    secrets: [ slack_webhook ]
+    channel: devops
+    username: drone
+    icon_url: https://storage.googleapis.com/slack-images-cyclops/ci/rShq67tG_400x400.png
+    image_url: https://storage.googleapis.com/slack-images-cyclops/ci/It_Compiles_Ship_It.png
+    template: >
+      {{#success build.status}}
+        Build <{{build.link}}|#{{build.number}}> succeeded.
+        Repo: <https://github.com/{{repo.owner}}|{{repo.owner}}>/<https://github.com/{{repo.owner}}/{{repo.name}}|{{repo.name}}>
+        Commit: <https://github.com/{{repo.owner}}/{{repo.name}}/commit/{{build.commit}}|{{truncate build.commit 8}}>
+        Branch: <https://github.com/{{repo.owner}}/{{repo.name}}/tree/{{build.branch}}|{{build.branch}}>,
+        Author: <https://github.com/{{lowercase build.author}}|{{lowercase build.author}}>.
+      {{else}}
+        Build <{{build.link}}|#{{build.number}}> failed.
+        Repo: <https://github.com/{{repo.owner}}|{{repo.owner}}>/<https://github.com/{{repo.owner}}/{{repo.name}}|{{repo.name}}>
+        Commit: <https://github.com/{{repo.owner}}/{{repo.name}}/commit/{{build.commit}}|{{truncate build.commit 8}}>
+        Branch: <https://github.com/{{repo.owner}}/{{repo.name}}/tree/{{build.branch}}|{{build.branch}}>,
+        Author: <https://github.com/{{lowercase build.author}}|{{lowercase build.author}}>.
+      {{/success}}
