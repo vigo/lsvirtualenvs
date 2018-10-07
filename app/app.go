@@ -2,7 +2,6 @@ package app
 
 import (
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -16,7 +15,7 @@ import (
 )
 
 const (
-	appVersion   = "2.1.1"
+	appVersion   = "2.1.2"
 	colorRed     = "\x1b[31m"
 	colorGreen   = "\x1b[32m"
 	colorYellow  = "\x1b[33m"
@@ -66,6 +65,7 @@ Examples:
 `
 )
 
+// CmdApp reppresents io.Writer
 type CmdApp struct {
 	out io.Writer
 }
@@ -107,17 +107,16 @@ func (m *CmdApp) Run() error {
 	return m.GetVirtualenvs()
 }
 
-// printColorf implements terminal friendly color output if
+// PrintColorf implements terminal friendly color output if
 // color enable flag is set!
 func (m *CmdApp) PrintColorf(text string, color string) string {
 	if *cmdOptionColorOutput {
 		return fmt.Sprintf("%s%s%s", color, text, colorReset)
-	} else {
-		return text
 	}
+	return text
 }
 
-// pluralize implements a quick and dirty pluralize process
+// Pluralize implements a quick and dirty pluralize process
 // if you pass plural version as "s" only, output will be
 // suffixed with "s" infront of singular version of text.
 func (m *CmdApp) Pluralize(singular string, plural string, amount int) string {
@@ -132,13 +131,13 @@ func (m *CmdApp) Pluralize(singular string, plural string, amount int) string {
 	return out
 }
 
-// dynamicDigitPadding implements dynamic string format with
+// DynamicDigitPadding implements dynamic string format with
 // digit padding
 func (m *CmdApp) DynamicDigitPadding(number int) string {
 	return fmt.Sprintf("%0*d", maxIndexDigits, number+1)
 }
 
-// rightPaddingWithChar implements padding for given length with given padding
+// RightPaddingWithChar implements padding for given length with given padding
 // character. If padChar is not provided, function uses "." as default.
 func (m *CmdApp) RightPaddingWithChar(text string, length int, padChar string, format string) string {
 	if padChar == "" {
@@ -155,7 +154,7 @@ func (m *CmdApp) GetVirtualenvs() error {
 	lookup := "WORKON_HOME"
 	currentWorkingDir, envExists := os.LookupEnv(lookup)
 	if !envExists {
-		return errors.New(fmt.Sprintf("%s doesn't exists in your environment!", lookup))
+		return fmt.Errorf("%s doesn't exists in your environment", lookup)
 	}
 
 	filesList, err := ioutil.ReadDir(currentWorkingDir)
