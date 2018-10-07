@@ -1,5 +1,6 @@
 ![Version](https://img.shields.io/badge/version-2.1.1-yellow.svg)
 [![Build Status](https://travis-ci.org/vigo/lsvirtualenvs.svg?branch=master)](https://travis-ci.org/vigo/lsvirtualenvs)
+[ ![Codeship Status for vigo/lsvirtualenvs](https://app.codeship.com/projects/b06ed800-ac6f-0136-3f91-3ab694b88e1c/status?branch=master)](https://app.codeship.com/projects/309408)
 
 # List Virtual Environments for `virtualenvwrapper`
 
