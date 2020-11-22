@@ -93,14 +93,13 @@ func (c *CLIApplication) Run() error {
 				defer wg.Done()
 				pythonBin := workonHome + "/" + dirName + "/bin/python"
 				cmd := pythonBin + " --version 2>&1"
+				fmt.Printf("cmd: %v\n", cmd)
 
 				pyVersion, err := exec.Command("bash", "-c", cmd).Output()
-				if err != nil {
-					pyVersion = []byte("?")
+				if err == nil {
+					pyVersion = bytes.TrimSpace(pyVersion)
+					listEnvs.Store(dirName, strings.Split(string(pyVersion), " ")[1])
 				}
-				pyVersion = bytes.TrimSpace(pyVersion)
-
-				listEnvs.Store(dirName, strings.Split(string(pyVersion), " ")[1])
 			}(file.Name())
 		}
 	}
