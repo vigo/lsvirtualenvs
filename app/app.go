@@ -9,250 +9,123 @@ import (
 	"os"
 	"os/exec"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/fatih/color"
 )
 
-const (
-	appVersion   = "2.1.2"
-	colorRed     = "\x1b[31m"
-	colorGreen   = "\x1b[32m"
-	colorYellow  = "\x1b[33m"
-	colorBlue    = "\x1b[34m"
-	colorMagenta = "\x1b[35m"
-	colorCyan    = "\x1b[36m"
-	colorWhite   = "\x1b[37m"
-	colorGray    = "\x1b[38m"
-	colorReset   = "\x1b[0m"
-)
+const version = "0.1.3"
 
 var (
-	virtualEnvsListMap    sync.Map
-	cmdOptionVersionInfo  *bool
-	cmdOptionSimpleOutput *bool
-	cmdOptionColorOutput  *bool
-	cmdOptionIndexEnabled *bool
-	maxIndexDigits        int
-	outputHeader          = `You have %s %s available
+	listEnvs              sync.Map
+	sortedKeys            []string
+	optVersionInformation *bool
+	optColorEnabled       *bool
 
-`
+	colorTitle = color.New(color.Bold, color.FgYellow).SprintFunc()
+
 	usage = `
-Usage: lsvirtualenvs [options...]
+usage: %[1]s [-flags]
 
-List available virtualenvironments created by virtualenvwrapper.
+  flags:
 
-Options:
-
-  -h, --help      Display help! :)
-  -c, --color     Enable color output
-  -s, --simple    Just list environment names, overrides -c, -i
-  -i, --index     Add index number to output
-      --version   Version information
-
-Examples:
-
-  lsvirtualenvs -h
-  lsvirtualenvs --version
-  lsvirtualenvs -c
-  lsvirtualenvs --color
-  lsvirtualenvs -c -i
-  lsvirtualenvs --color --index
-
-  lsvirtualenvs -s
-  lsvirtualenvs -simple
+  -c, -color          enable colored output
+      -version        display version information (%s)
 
 `
 )
 
-// CmdApp reppresents io.Writer
-type CmdApp struct {
-	out io.Writer
+// CLIApplication represents app structure
+type CLIApplication struct {
+	Out                  io.Writer
+	WorkOnHomeEnvVarName string
 }
 
-// LsVirtualenvsApp is the core application
-func LsVirtualenvsApp() *CmdApp {
+// NewCLIApplication creates new CLIApplication instance
+func NewCLIApplication() *CLIApplication {
 	flag.Usage = func() {
-		fmt.Fprint(os.Stderr, usage)
+		// w/o os.Stdout, you need to pipe out via
+		// cmd &> /path/to/file
+		fmt.Fprintf(os.Stdout, usage, os.Args[0], version)
+		os.Exit(0)
 	}
-	cmdOptionVersionInfo = flag.Bool("version", false, "Current version information")
 
-	cmdOptionSimpleOutput = flag.Bool("simple", false, "Just list environment names, overrides -c, -i")
-	flag.BoolVar(cmdOptionSimpleOutput, "s", false, "")
+	optVersionInformation = flag.Bool("version", false, "")
 
-	cmdOptionColorOutput = flag.Bool("color", false, "Enable color output")
-	flag.BoolVar(cmdOptionColorOutput, "c", false, "")
-
-	cmdOptionIndexEnabled = flag.Bool("index", false, "Add index number to output")
-	flag.BoolVar(cmdOptionIndexEnabled, "i", false, "")
+	optColorEnabled = flag.Bool("color", false, "enable color")
+	flag.BoolVar(optColorEnabled, "c", false, "")
 
 	flag.Parse()
 
-	return &CmdApp{
-		out: os.Stdout,
+	if !*optColorEnabled {
+		color.NoColor = true
+	}
+
+	return &CLIApplication{
+		Out:                  os.Stdout,
+		WorkOnHomeEnvVarName: "WORKON_HOME",
 	}
 }
 
-// Version returns the current version of LsVirtualenvsApp
-func (m *CmdApp) Version() error {
-	fmt.Fprintf(m.out, "%s\n", appVersion)
-	return nil
-}
-
-// Run implements LsVirtualenvsApp to run!
-func (m *CmdApp) Run() error {
-	if *cmdOptionVersionInfo {
-		return m.Version()
-	}
-	return m.GetVirtualenvs()
-}
-
-// PrintColorf implements terminal friendly color output if
-// color enable flag is set!
-func (m *CmdApp) PrintColorf(text string, color string) string {
-	if *cmdOptionColorOutput {
-		return fmt.Sprintf("%s%s%s", color, text, colorReset)
-	}
-	return text
-}
-
-// Pluralize implements a quick and dirty pluralize process
-// if you pass plural version as "s" only, output will be
-// suffixed with "s" infront of singular version of text.
-func (m *CmdApp) Pluralize(singular string, plural string, amount int) string {
-	out := singular
-	if amount > 1 {
-		if plural == "s" {
-			out = fmt.Sprintf("%ss", singular)
-		} else {
-			out = plural
-		}
-	}
-	return out
-}
-
-// DynamicDigitPadding implements dynamic string format with
-// digit padding
-func (m *CmdApp) DynamicDigitPadding(number int) string {
-	return fmt.Sprintf("%0*d", maxIndexDigits, number+1)
-}
-
-// RightPaddingWithChar implements padding for given length with given padding
-// character. If padChar is not provided, function uses "." as default.
-func (m *CmdApp) RightPaddingWithChar(text string, length int, padChar string, format string) string {
-	if padChar == "" {
-		padChar = "."
-	}
-	repeatingChars := strings.Repeat(padChar, length-len(text))
-	return fmt.Sprintf(format, text, repeatingChars)
-}
-
-// GetVirtualenvs implements fetching virtualenv names and related
-// Python versions. Checks "WORKON_HOME" environment variable first,
-// the checks if the required folder exists.
-func (m *CmdApp) GetVirtualenvs() error {
-	lookup := "WORKON_HOME"
-	currentWorkingDir, envExists := os.LookupEnv(lookup)
-	if !envExists {
-		return fmt.Errorf("%s doesn't exists in your environment", lookup)
+// Run executes main application
+func (c *CLIApplication) Run() error {
+	if *optVersionInformation {
+		fmt.Fprintln(c.Out, version)
+		return nil
 	}
 
-	filesList, err := ioutil.ReadDir(currentWorkingDir)
+	workonHome, ok := os.LookupEnv(c.WorkOnHomeEnvVarName)
+	if !ok {
+		return fmt.Errorf("%s environment variable doesn't exists in your environment", c.WorkOnHomeEnvVarName)
+	}
+
+	files, err := ioutil.ReadDir(workonHome)
 	if err != nil {
 		return err
 	}
 
 	var wg sync.WaitGroup
-
-	virtualEnvsList := make(map[string]string)
-
-	for _, file := range filesList {
-		if file.IsDir() == true {
+	for _, file := range files {
+		if file.IsDir() {
 			wg.Add(1)
-
 			go func(dirName string) {
 				defer wg.Done()
+				pythonBin := workonHome + "/" + dirName + "/bin/python"
+				cmd := pythonBin + " --version 2>&1"
 
-				pythonBinPath := fmt.Sprintf("%s/%s/bin/python", currentWorkingDir, dirName)
-				bashCommand := fmt.Sprintf("%s --version 2>&1", pythonBinPath)
-
-				pythonVersion, err := exec.Command("bash", "-c", bashCommand).Output()
-
+				pyVersion, err := exec.Command("bash", "-c", cmd).Output()
 				if err != nil {
-					pythonVersion = []byte("???")
-				} else {
-					pythonVersion = bytes.TrimSpace(pythonVersion)
+					pyVersion = []byte("?")
 				}
-				virtualEnvsListMap.Store(dirName, strings.Split(fmt.Sprintf("%s", pythonVersion), " ")[1])
+				pyVersion = bytes.TrimSpace(pyVersion)
+
+				listEnvs.Store(dirName, strings.Split(string(pyVersion), " ")[1])
 			}(file.Name())
 		}
 	}
 	wg.Wait()
 
-	virtualEnvsListMap.Range(func(ki, vi interface{}) bool {
-		k, v := ki.(string), vi.(string)
-		virtualEnvsList[k] = v
+	m := map[string]interface{}{}
+	listEnvs.Range(func(key, value interface{}) bool {
+		m[key.(string)] = value
 		return true
 	})
 
-	var keysOfVirtualEnvsList []string
-
-	longestKeylength := ""
-	for key := range virtualEnvsList {
-		keysOfVirtualEnvsList = append(keysOfVirtualEnvsList, key)
-		if len(key) > len(longestKeylength) {
-			longestKeylength = key
+	longestKey := ""
+	for key := range m {
+		sortedKeys = append(sortedKeys, key)
+		if len(key) > len(longestKey) {
+			longestKey = key
 		}
 	}
-	sort.Strings(keysOfVirtualEnvsList)
-	lengthOfEnvironments := len(keysOfVirtualEnvsList)
+	sort.Strings(sortedKeys)
 
-	if *cmdOptionSimpleOutput {
-		fmt.Fprintf(m.out, "%s", strings.Join(keysOfVirtualEnvsList[:], "\n"))
-		return nil
+	fmt.Fprintf(c.Out, colorTitle("You have %d %s available\n\n"), len(sortedKeys), "environment")
+
+	for _, key := range sortedKeys {
+		fmt.Fprintf(c.Out, "[%-*v] %v\n", len(longestKey), key, m[key])
 	}
 
-	fmt.Fprintf(
-		m.out,
-		outputHeader,
-		m.PrintColorf(strconv.Itoa(lengthOfEnvironments), colorYellow),
-		fmt.Sprintf("%s", m.Pluralize("virtualenv", "s", lengthOfEnvironments)))
-
-	var computedResult []string
-
-	if *cmdOptionIndexEnabled {
-		maxIndexDigits = func(number int) int {
-			if number < 9 {
-				return 1
-			} else if number > 9 {
-				return 2
-			} else if number > 99 {
-				return 3
-			} else {
-				return 6
-			}
-		}(lengthOfEnvironments)
-	}
-
-	for index, environmentName := range keysOfVirtualEnvsList {
-		indexString := ""
-		if *cmdOptionIndexEnabled {
-			indexString = fmt.Sprintf("%s ", m.PrintColorf(m.DynamicDigitPadding(index), colorGreen))
-		}
-		appendValue := fmt.Sprintf(
-			"%s%s %s",
-			indexString,
-			m.RightPaddingWithChar(
-				environmentName,
-				len(longestKeylength)+5, "",
-				fmt.Sprintf(
-					"[%s] %s",
-					m.PrintColorf("%s", colorYellow),
-					m.PrintColorf("%s", colorGray))),
-			m.PrintColorf(virtualEnvsList[environmentName], colorWhite))
-		computedResult = append(computedResult, appendValue)
-	}
-
-	fmt.Fprintf(m.out, fmt.Sprintf("%s\n", strings.Join(computedResult[:], "\n")))
 	return nil
 }

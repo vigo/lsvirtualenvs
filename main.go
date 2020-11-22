@@ -1,10 +1,3 @@
-/*
-
-	Build with: go version go1.11.1 darwin/amd64
-	Created by Uğur "vigo" Özyılmazel on 2018-07-01.
-
-*/
-
 package main
 
 import (
@@ -15,10 +8,9 @@ import (
 )
 
 func main() {
-	cmd := app.LsVirtualenvsApp()
-
+	cmd := app.NewCLIApplication()
 	if err := cmd.Run(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 }
