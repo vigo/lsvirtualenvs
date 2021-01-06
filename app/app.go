@@ -10,27 +10,33 @@ import (
 	"os/exec"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/fatih/color"
+	"golang.org/x/text/feature/plural"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
-const version = "0.1.3"
+const version = "3.0.0"
 
 var (
-	listEnvs              sync.Map
+	listEnvs              map[string]string
 	sortedKeys            []string
 	optVersionInformation *bool
 	optColorEnabled       *bool
+	optSimpleOutput       *bool
 
-	colorTitle = color.New(color.Bold, color.FgYellow).SprintFunc()
-
-	usage = `
+	colorTitle     = color.New(color.Bold, color.FgYellow).SprintFunc()
+	colorDots      = color.New(color.Faint).SprintFunc()
+	colorEnvName   = color.New(color.Underline, color.FgGreen).SprintFunc()
+	colorPyVersion = color.New(color.FgWhite).SprintFunc()
+	usage          = `
 usage: %[1]s [-flags]
 
   flags:
 
   -c, -color          enable colored output
+  -s, -simple         just list environment names, overrides -c
       -version        display version information (%s)
 
 `
@@ -55,6 +61,9 @@ func NewCLIApplication() *CLIApplication {
 
 	optColorEnabled = flag.Bool("color", false, "enable color")
 	flag.BoolVar(optColorEnabled, "c", false, "")
+
+	optSimpleOutput = flag.Bool("simple", false, "just list environment names, overrides -c")
+	flag.BoolVar(optSimpleOutput, "s", false, "")
 
 	flag.Parse()
 
@@ -85,34 +94,28 @@ func (c *CLIApplication) Run() error {
 		return err
 	}
 
-	var wg sync.WaitGroup
+	listEnvs = make(map[string]string)
 	for _, file := range files {
 		if file.IsDir() {
-			wg.Add(1)
-			go func(dirName string) {
-				defer wg.Done()
+			c := make(chan []string)
+			go func(dirName string, c chan []string) {
 				pythonBin := workonHome + "/" + dirName + "/bin/python"
 				cmd := pythonBin + " --version 2>&1"
-				fmt.Printf("cmd: %v\n", cmd)
 
 				pyVersion, err := exec.Command("bash", "-c", cmd).Output()
 				if err == nil {
 					pyVersion = bytes.TrimSpace(pyVersion)
-					listEnvs.Store(dirName, strings.Split(string(pyVersion), " ")[1])
+					c <- []string{dirName, strings.Split(string(pyVersion), " ")[1]}
 				}
-			}(file.Name())
+			}(file.Name(), c)
+
+			result := <-c
+			listEnvs[result[0]] = result[1]
 		}
 	}
-	wg.Wait()
-
-	m := map[string]interface{}{}
-	listEnvs.Range(func(key, value interface{}) bool {
-		m[key.(string)] = value
-		return true
-	})
 
 	longestKey := ""
-	for key := range m {
+	for key := range listEnvs {
 		sortedKeys = append(sortedKeys, key)
 		if len(key) > len(longestKey) {
 			longestKey = key
@@ -120,11 +123,33 @@ func (c *CLIApplication) Run() error {
 	}
 	sort.Strings(sortedKeys)
 
-	fmt.Fprintf(c.Out, colorTitle("You have %d %s available\n\n"), len(sortedKeys), "environment")
+	message.Set(
+		language.English,
+		"you have %d environment available",
+		plural.Selectf(1, "%d",
+			"=1", "you have one environment available",
+			"=2", "you have %[1]d environments available",
+			"other", "you have %[1]d environments available",
+		))
+	p := message.NewPrinter(language.English)
+	titleMessage := p.Sprintf("you have %d environment available", len(sortedKeys))
 
-	for _, key := range sortedKeys {
-		fmt.Fprintf(c.Out, "[%-*v] %v\n", len(longestKey), key, m[key])
+	if *optSimpleOutput {
+		fmt.Fprintf(c.Out, "%s", strings.Join(sortedKeys[:], "\n"))
+		fmt.Println()
+		return nil
 	}
 
+	fmt.Fprintf(c.Out, "%s\n\n", colorTitle(titleMessage))
+	for _, key := range sortedKeys {
+		fmt.Fprintf(
+			c.Out,
+			"%s%s %v\n",
+			colorEnvName(key),
+			colorDots(strings.Repeat(".", (len(longestKey)+5)-len(key))),
+			colorPyVersion(listEnvs[key]),
+		)
+	}
+	fmt.Println()
 	return nil
 }
