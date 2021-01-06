@@ -25,18 +25,22 @@ var (
 	optVersionInformation *bool
 	optColorEnabled       *bool
 	optSimpleOutput       *bool
+	optIndexEnabled       *bool
 
-	colorTitle     = color.New(color.Bold, color.FgYellow).SprintFunc()
-	colorDots      = color.New(color.Faint).SprintFunc()
-	colorEnvName   = color.New(color.Underline, color.FgGreen).SprintFunc()
-	colorPyVersion = color.New(color.FgWhite).SprintFunc()
-	usage          = `
+	colorTitle        = color.New(color.Bold, color.FgYellow).SprintFunc()
+	colorDots         = color.New(color.Faint).SprintFunc()
+	colorEnvName      = color.New(color.Underline, color.FgGreen).SprintFunc()
+	colorPyVersion    = color.New(color.FgWhite).SprintFunc()
+	colorIndexNumbers = color.New(color.FgHiBlue).SprintFunc()
+
+	usage = `
 usage: %[1]s [-flags]
 
   flags:
 
   -c, -color          enable colored output
-  -s, -simple         just list environment names, overrides -c
+  -s, -simple         just list environment names, overrides -c, -i
+  -i, -index          add index number to output
       -version        display version information (%s)
 
 `
@@ -59,11 +63,14 @@ func NewCLIApplication() *CLIApplication {
 
 	optVersionInformation = flag.Bool("version", false, "")
 
-	optColorEnabled = flag.Bool("color", false, "enable color")
+	optColorEnabled = flag.Bool("color", false, "enable colored output")
 	flag.BoolVar(optColorEnabled, "c", false, "")
 
 	optSimpleOutput = flag.Bool("simple", false, "just list environment names, overrides -c")
 	flag.BoolVar(optSimpleOutput, "s", false, "")
+
+	optIndexEnabled = flag.Bool("index", false, "add index number to output")
+	flag.BoolVar(optIndexEnabled, "i", false, "")
 
 	flag.Parse()
 
@@ -141,10 +148,15 @@ func (c *CLIApplication) Run() error {
 	}
 
 	fmt.Fprintf(c.Out, "%s\n\n", colorTitle(titleMessage))
-	for _, key := range sortedKeys {
+	for index, key := range sortedKeys {
+		strIndex := ""
+		if *optIndexEnabled {
+			strIndex = colorIndexNumbers(string(fmt.Sprintf("[%04d] ", index+1)))
+		}
 		fmt.Fprintf(
 			c.Out,
-			"%s%s %v\n",
+			"%s%s%s %v\n",
+			strIndex,
 			colorEnvName(key),
 			colorDots(strings.Repeat(".", (len(longestKey)+5)-len(key))),
 			colorPyVersion(listEnvs[key]),
