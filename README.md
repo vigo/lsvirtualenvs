@@ -8,16 +8,17 @@
 
 If you use `virtualenvwrapper` you’ll love this :)
 
-Due `virtualenvwrapper`’s `lsvirtualenv` super slow speed and lack of information,
-I made this simple command in `golang`.
+Due to `virtualenvwrapper`’s `lsvirtualenv`’s super slow speed and lack of
+information, I made this simple cli-tool with `golang`.
 
 
 ## Requirements
 
-I’m assuming that you are already using [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/)
-and you have `WORKON_HOME` variable exists in your command-line environment.
+I’m assuming that you are already using [virtualenvwrapper][virtualenvwrapper]
+and you have `WORKON_HOME` environment variable is already exists in your
+shell environment.
 
-- `Go 1.15.6` or higher
+All you need is `Go 1.1X.X` or higher
 
 ---
 
@@ -28,6 +29,26 @@ $ go get -u github.com/vigo/lsvirtualenvs
 ```
 
 This will build and install binary of `lsvirtualenvs` under `$GOPATH/bin` path.
+
+### Build from source
+
+Check your `go env GOPATH` then check sources;
+
+```bash
+$ ls "$(go env GOPATH)/src/"
+cloud.google.com  github.com  go.opencensus.io  golang.org  google.golang.org
+
+# if github.com does not exists, create the folder via
+# $ mkdir "$(go env GOPATH)/src/github.com"
+
+$ mkdir "$(go env GOPATH)/src/github.com/vigo" # need for run/build operations
+$ cd "$(go env GOPATH)/src/github.com/vigo"
+$ git clone git@github.com:vigo/lsvirtualenvs.git
+$ cd lsvirtualenvs/
+$ go build
+$ ls "$(go env GOPATH)/bin" # you should see `lsvirtualenvs` binary
+$ lsvirtualenvs -h
+```
 
 ## Usage
 
@@ -70,6 +91,8 @@ you have 2 environments available
 
 [0001] textmate................... 3.8.0
 [0002] trash...................... 3.8.0
+
+$ lsvirtualenvs -c -i # colored output with index
 ```
 
 Run tests via;
@@ -78,11 +101,13 @@ Run tests via;
 $ go test -v ./...
 ```
 
+---
+
 ## Docker
 
-Note that, app checks for `WORKON_HOME` environment variable which is
-not available inside of the docker container :) This is just an
-example :)
+Note that, `lsvirtualenvs` requires `WORKON_HOME` environment variable which is
+not available inside of the docker container :) This is just an example / concept
+of dockerized version of the application :)
 
 Build:
 
@@ -106,6 +131,7 @@ $ docker run -i -t lsvirtualenvs lsvirtualenvs -h
 **2021-01-06**
 
 * Complete make-over from scratch, removed `sync.Map()`, used channels
+* Fix information on README
 
 **2018-07-05**
 
@@ -148,9 +174,9 @@ $ docker run -i -t lsvirtualenvs lsvirtualenvs -h
 All PR’s are welcome!
 
 1. `fork` (https://github.com/vigo/lsvirtualenvs/fork)
-1. Create your `branch` (`git checkout -b my-features`)
-1. `commit` yours (`git commit -am 'added killer options'`)
-1. `push` your `branch` (`git push origin my-features`)
+1. Create your `branch` (`git checkout -b my-feature`)
+1. `commit` yours (`git commit -am 'Add garlic and yogurt'`)
+1. `push` your `branch` (`git push origin my-feature`)
 1. Than create a new **Pull Request**!
 
 ---
@@ -161,3 +187,5 @@ This project is licensed under MIT
 
 ---
 
+
+[virtualenvwrapper]: https://virtualenvwrapper.readthedocs.io/en/latest/
