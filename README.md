@@ -78,6 +78,12 @@ Run tests via;
 $ go test -v ./...
 ```
 
+## Docker
+
+Build and run:
+
+
+
 ---
 
 ## Change Log
