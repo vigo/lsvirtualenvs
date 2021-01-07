@@ -80,9 +80,24 @@ $ go test -v ./...
 
 ## Docker
 
-Build and run:
+Note that, app checks for `WORKON_HOME` environment variable which is
+not available inside of the docker container :) This is just an
+example :)
 
+Build:
 
+```bash
+$ docker build -t lsvirtualenvs .
+```
+
+Run:
+
+```bash
+$ docker run -i -t lsvirtualenvs lsvirtualenvs
+WORKON_HOME environment variable doesn't exists in your environment
+
+$ docker run -i -t lsvirtualenvs lsvirtualenvs -h
+```
 
 ---
 
