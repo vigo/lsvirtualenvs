@@ -41,7 +41,7 @@ usage: lsvirtualenvs [-flags]
   -c, -color          enable colored output
   -s, -simple         just list environment names, overrides -c, -i
   -i, -index          add index number to output
-      -version        display version information (3.0.0)
+      -version        display version information (X.X.X)
 ```
 
 Usage examples:
