@@ -1,7 +1,8 @@
 language: go
-
 go:
-  - "1.10.x"
-  - master
-
+- 1.10.x
+- master
 script: go test ./...
+notifications:
+  slack:
+    secure: iaxkF9VGJRAmp8/1VqB8pIeEKis0+aeJlZLm8FaZ3b/UVrIwMfrcjZ2XJy4/0YGmXVrXl6wEbuhC2bAEnUy35efQM2RzZxwilEw4f61FB59wR1/JK1jC9LZkWoqeI/GsitXMmBmGNxenTnu8XP7I6QhQWwSdkn46F+82OUSi26UqS7HUgtdkO2HG7YuMbrDMUlIwjgQZD2gMbgyZfAcYNyM/NBvw7vj0IMUVKdsXAhsS8SmgU5UH22PgUA+JZ7eAyi2Uya/4/6Z6eS084UnuwEbiKgSKyg37etD1Z+9CkkPJPzhGYCyy3lgdyMtbKgXGTeaSxSv+1INIuJ6BNIRLZP43PTQzoGV2E8Gjppvc1X+HqCG7Ad1mfB4fwpGDob3X0S18lvVNWlknF+2W6QmzhcFXTIzNTPbqC1BfsTxAMMPNI1yCh3+wieGc7+7Lq6T4FUQVav2cxoFRgY897ehSlGjpo0XWBFTQ1AluemqY4GVXz3DxZIc6VN+X1g7ygGOPtoeU7oqcsWWkoBhW8E3/dxlKtY5GoZW0OwQnF7IvvsZSub+HSk+6X0oXUNlvkM2ofYNI4KR0e8oFigTeOew42jL/9wV+aNN360DxtQo/in31b7BlAWy8/CmhZVEEY9eHjtuybmsY9vaK5Gqg/L3XyN7D06jZFZbxeRSv+tfP4tI=
