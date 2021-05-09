@@ -2,7 +2,7 @@
 ![Go](https://img.shields.io/badge/golang-1.15.6-black.svg)
 [![Documentation](https://godoc.org/github.com/vigo/lsvirtualenvs?status.svg)](https://pkg.go.dev/github.com/vigo/lsvirtualenvs)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vigo/lsvirtualenvs)](https://goreportcard.com/report/github.com/vigo/lsvirtualenvs)
-[![Build Status](https://travis-ci.org/vigo/lsvirtualenvs.svg?branch=master)](https://travis-ci.org/vigo/lsvirtualenvs)
+[![Build Status](https://travis-ci.org/vigo/lsvirtualenvs.svg?branch=main)](https://travis-ci.org/vigo/lsvirtualenvs)
 ![Go Build Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/go.yml/badge.svg)
 
 # List Virtual Environments for `virtualenvwrapper`
@@ -57,6 +57,8 @@ $ lsvirtualenvs -h
 $ lsvirtualenvs -h
 
 usage: lsvirtualenvs [-flags]
+
+lists existing virtualenvs which are created via "mkvirtualenv" command.
 
   flags:
 
@@ -127,40 +129,59 @@ $ docker run -i -t lsvirtualenvs lsvirtualenvs -h
 
 ---
 
+## Rake Tasks
+
+```bash
+$ rake -T
+
+rake default            # show avaliable tasks (default task)
+rake release[revision]  # Release new version major,minor,patch, default: patch
+rake test[verbose]      # run tests
+```
+
+---
+
 ## Change Log
+
+**2021-05-09**
+
+- Add github action for go build status
+- Changed `master` branch to `main`
+- Add missing information to `-h` help
+- Add Rake tasks
 
 **2021-01-06**
 
-* Complete make-over from scratch, removed `sync.Map()`, used channels
-* Fix information on README
+- Complete make-over from scratch, removed `sync.Map()`, used channels
+- Fix information on README
 
 **2018-07-05**
 
-* Due to @fatih’s warning, removed `Lock()` and used `sync.Map()`
-* Version 2.1.1
+- Due to @fatih’s warning, removed `Lock()` and used `sync.Map()`
+- Version 2.1.1
 
 **2018-07-04**
 
-* App refactored
-* Unit tests are completed
-* Version 2.0.1
+- App refactored
+- Unit tests are completed
+- Version 2.0.1
 
 **2018-07-02**
 
-* Basic unit testing
+- Basic unit testing
 
 **2018-07-01**
 
-* Code refactor
+- Code refactor
 
 **2018-06-29**
 
-* First release
-* Addition: `--version`
+- First release
+- Addition: `--version`
 
 **2018-06-28**
 
-* Initial commit
+- Initial commit
 
 ---
 
