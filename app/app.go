@@ -36,6 +36,8 @@ var (
 	usage = `
 usage: %[1]s [-flags]
 
+lists existing virtualenvs which are created via "mkvirtualenv" command.
+
   flags:
 
   -c, -color          enable colored output
