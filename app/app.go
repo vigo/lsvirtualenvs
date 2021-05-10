@@ -17,7 +17,7 @@ import (
 	"golang.org/x/text/message"
 )
 
-const version = "3.0.1"
+const version = "3.0.2"
 
 var (
 	listEnvs              map[string]string
