@@ -83,3 +83,24 @@ task :release, [:revision] => [:repo_clean] do |_, args|
   )
 end
 # -----------------------------------------------------------------------------
+
+
+# docker
+# -----------------------------------------------------------------------------
+namespace :docker do
+  desc "Build"
+  task :build do
+    system "docker build . -t lsvirtualenvs"
+  end
+  
+  desc "Delete image"
+  task :rmi do
+    system "docker rmi lsvirtualenvs:latest"
+  end
+  
+  desc "Run"
+  task :run do
+    system "docker run -i -t lsvirtualenvs:latest lsvirtualenvs -h"
+  end
+end
+# -----------------------------------------------------------------------------

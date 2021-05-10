@@ -1,5 +1,5 @@
 ![Version](https://img.shields.io/badge/version-3.0.1-yellow.svg)
-![Go](https://img.shields.io/badge/golang-1.15.6-black.svg)
+![Go](https://img.shields.io/badge/golang-1.16.3-black.svg)
 [![Documentation](https://godoc.org/github.com/vigo/lsvirtualenvs?status.svg)](https://pkg.go.dev/github.com/vigo/lsvirtualenvs)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vigo/lsvirtualenvs)](https://goreportcard.com/report/github.com/vigo/lsvirtualenvs)
 [![Build Status](https://travis-ci.org/vigo/lsvirtualenvs.svg?branch=main)](https://travis-ci.org/vigo/lsvirtualenvs)
@@ -19,14 +19,12 @@ I’m assuming that you are already using [virtualenvwrapper][virtualenvwrapper]
 and you have `WORKON_HOME` environment variable is already exists in your
 shell environment.
 
-All you need is `Go 1.1X.X` or higher
-
 ---
 
 ## Installation
 
 ```bash
-$ go get -u github.com/vigo/lsvirtualenvs
+$ go get github.com/vigo/lsvirtualenvs
 ```
 
 This will build and install binary of `lsvirtualenvs` under `$GOPATH/bin` path.

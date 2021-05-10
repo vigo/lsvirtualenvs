@@ -1,4 +1,4 @@
-FROM golang:1.15.6-alpine AS builder
+FROM golang:1.16-alpine AS builder
 WORKDIR /go/src/github.com/vigo/lsvirtualenvs
 COPY . .
 RUN apk add --no-cache git
