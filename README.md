@@ -23,8 +23,17 @@ shell environment.
 
 ## Installation
 
+You can install from the source;
+
 ```bash
 $ go get github.com/vigo/lsvirtualenvs
+```
+
+or, you can install from `brew`:
+
+```bash
+$ brew tap vigo/lsvirtualenvs
+$ brew install lsvirtualenvs
 ```
 
 This will build and install binary of `lsvirtualenvs` under `$GOPATH/bin` path.
