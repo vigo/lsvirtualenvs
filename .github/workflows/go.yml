@@ -2,11 +2,11 @@ name: Go
 on:
   push:
     branches:
-    - master
+    - main
     - development
   pull_request:
     branches:
-    - master
+    - main
     - development
 jobs:
   build:
