@@ -26,8 +26,9 @@ shell environment.
 You can install from the source;
 
 ```bash
-$ go get github.com/vigo/lsvirtualenvs
+$ go install github.com/vigo/lsvirtualenvs@latest
 ```
+
 This will build and install binary of `lsvirtualenvs` under `$GOPATH/bin` path.
 
 or, you can install from `brew`:
