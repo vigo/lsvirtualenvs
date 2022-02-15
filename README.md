@@ -4,6 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/vigo/lsvirtualenvs)](https://goreportcard.com/report/github.com/vigo/lsvirtualenvs)
 [![Build Status](https://travis-ci.org/vigo/lsvirtualenvs.svg?branch=main)](https://travis-ci.org/vigo/lsvirtualenvs)
 ![Go Build Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/go.yml/badge.svg)
+![GolangCI-Lint Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/golang-lint.yml/badge.svg)
 
 # List Virtual Environments for `virtualenvwrapper`
 
@@ -11,6 +12,16 @@ If you use `virtualenvwrapper` you’ll love this :)
 
 Due to `virtualenvwrapper`’s `lsvirtualenv`’s super slow speed and lack of
 information, I made this simple cli-tool with `golang`.
+
+---
+
+## Update
+
+**2022-02-15**
+
+- Add `LSVIRTUALENVS_COLOR_ALWAYS` environment variable check. Set `LSVIRTUALENVS_COLOR_ALWAYS=1` for
+  colored output all the time
+- Add GolangCI-Lint checker
 
 
 ## Requirements

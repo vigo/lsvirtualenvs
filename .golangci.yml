@@ -1,0 +1,31 @@
+run:
+  concurrency: 4
+  timeout: 1m
+
+linters:
+  disable-all: true
+  enable:
+    - asciicheck 
+    - durationcheck 
+    - errcheck 
+    - errorlint 
+    - exhaustive 
+    - gosec 
+    - govet 
+    - makezero 
+    - nilerr 
+    - rowserrcheck 
+    - exportloopref 
+    - sqlclosecheck 
+    - staticcheck 
+    - typecheck 
+    - bodyclose 
+    - noctx 
+    - prealloc
+    - gosimple
+  presets:
+    - comment 
+    - error 
+    - format 
+    - metalinter 
+    - unused 

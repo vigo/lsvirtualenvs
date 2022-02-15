@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -20,6 +21,8 @@ import (
 const version = "0.1.0"
 
 var (
+	errWorkonHomeEnvNotExists = errors.New("you need to set WORKON_HOME environment variable")
+
 	listEnvs              map[string]string
 	sortedKeys            []string
 	optVersionInformation *bool
@@ -48,13 +51,12 @@ lists existing virtualenvs which are created via "mkvirtualenv" command.
 `
 )
 
-// CLIApplication represents app structure
+// CLIApplication represents app structure.
 type CLIApplication struct {
-	Out                  io.Writer
-	WorkOnHomeEnvVarName string
+	Out io.Writer
 }
 
-// NewCLIApplication creates new CLIApplication instance
+// NewCLIApplication creates new CLIApplication instance.
 func NewCLIApplication() *CLIApplication {
 	flag.Usage = func() {
 		// w/o os.Stdout, you need to pipe out via
@@ -80,27 +82,30 @@ func NewCLIApplication() *CLIApplication {
 		color.NoColor = true
 	}
 
+	if !(os.Getenv("LSVIRTUALENVS_COLOR_ALWAYS") == "") {
+		color.NoColor = false
+	}
+
 	return &CLIApplication{
-		Out:                  os.Stdout,
-		WorkOnHomeEnvVarName: "WORKON_HOME",
+		Out: os.Stdout,
 	}
 }
 
-// Run executes main application
+// Run executes main application.
 func (c *CLIApplication) Run() error {
 	if *optVersionInformation {
 		fmt.Fprintln(c.Out, version)
 		return nil
 	}
 
-	workonHome, ok := os.LookupEnv(c.WorkOnHomeEnvVarName)
+	workonHome, ok := os.LookupEnv("WORKON_HOME")
 	if !ok {
-		return fmt.Errorf("%s environment variable doesn't exists in your environment", c.WorkOnHomeEnvVarName)
+		return errWorkonHomeEnvNotExists
 	}
 
 	files, err := ioutil.ReadDir(workonHome)
 	if err != nil {
-		return err
+		return fmt.Errorf("read dir error %w", err)
 	}
 
 	listEnvs = make(map[string]string)
@@ -132,7 +137,7 @@ func (c *CLIApplication) Run() error {
 	}
 	sort.Strings(sortedKeys)
 
-	message.Set(
+	_ = message.Set(
 		language.English,
 		"you have %d environment available",
 		plural.Selectf(1, "%d",
@@ -144,7 +149,7 @@ func (c *CLIApplication) Run() error {
 	titleMessage := p.Sprintf("you have %d environment available", len(sortedKeys))
 
 	if *optSimpleOutput {
-		fmt.Fprintf(c.Out, "%s", strings.Join(sortedKeys[:], "\n"))
+		fmt.Fprintf(c.Out, "%s", strings.Join(sortedKeys, "\n"))
 		fmt.Println()
 		return nil
 	}
