@@ -103,27 +103,39 @@ func (c *CLIApplication) Run() error {
 		return errWorkonHomeEnvNotExists
 	}
 
+	insideContainer := false
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		insideContainer = true
+	}
+
 	files, err := ioutil.ReadDir(workonHome)
 	if err != nil {
 		return fmt.Errorf("read dir error %w", err)
 	}
 
 	listEnvs = make(map[string]string)
+
 	for _, file := range files {
 		if file.IsDir() {
 			c := make(chan []string)
+
 			go func(dirName string, c chan []string) {
 				pythonBin := workonHome + "/" + dirName + "/bin/python"
 				cmd := pythonBin + " --version 2>&1"
 
-				pyVersion, err := exec.Command("bash", "-c", cmd).Output()
-				if err == nil {
-					pyVersion = bytes.TrimSpace(pyVersion)
-					c <- []string{dirName, strings.Split(string(pyVersion), " ")[1]}
+				if insideContainer {
+					c <- []string{dirName, "n/a"}
+				} else {
+					pyVersion, err := exec.Command("bash", "-c", cmd).Output()
+					if err == nil {
+						pyVersion = bytes.TrimSpace(pyVersion)
+						c <- []string{dirName, strings.Split(string(pyVersion), " ")[1]}
+					}
 				}
 			}(file.Name(), c)
 
 			result := <-c
+
 			listEnvs[result[0]] = result[1]
 		}
 	}

@@ -88,9 +88,14 @@ end
 # docker
 # -----------------------------------------------------------------------------
 namespace :docker do
+  desc "Lint"
+  task :lint do
+    system "hadolint Dockerfile"
+  end
+
   desc "Build"
   task :build do
-    system "docker build . -t lsvirtualenvs"
+    system "docker build . -t lsvirtualenvs:latest"
   end
   
   desc "Delete image"
@@ -101,6 +106,21 @@ namespace :docker do
   desc "Run"
   task :run do
     system "docker run -i -t lsvirtualenvs:latest lsvirtualenvs -h"
+  end
+
+  desc "Build and push to docker hub (latest)"
+  task :build_and_push do
+    current_git_tag = "v#{Rake::Task['current_version'].execute.first.call}"
+
+    system %{
+      docker build -t vigo/lsvirtualenvs:latest . &&
+      echo "-> vigo/lsvirtualenvs:latest" &&
+      docker build -t vigo/lsvirtualenvs:#{current_git_tag} . &&
+      echo "-> vigo/lsvirtualenvs:#{current_git_tag}" &&
+      docker push vigo/lsvirtualenvs:latest &&
+      docker push vigo/lsvirtualenvs:#{current_git_tag} &&
+      echo "-> pushed both..."
+    }
   end
 end
 # -----------------------------------------------------------------------------

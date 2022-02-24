@@ -5,6 +5,8 @@
 [![Build Status](https://travis-ci.org/vigo/lsvirtualenvs.svg?branch=main)](https://travis-ci.org/vigo/lsvirtualenvs)
 ![Go Build Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/go.yml/badge.svg)
 ![GolangCI-Lint Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/golang-lint.yml/badge.svg)
+![Docker Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/docker.yml/badge.svg)
+
 
 # List Virtual Environments for `virtualenvwrapper`
 
@@ -14,15 +16,6 @@ Due to `virtualenvwrapper`’s `lsvirtualenv`’s super slow speed and lack of
 information, I made this simple cli-tool with `golang`.
 
 ---
-
-## Update
-
-**2022-02-15**
-
-- Add `LSVIRTUALENVS_COLOR_ALWAYS` environment variable check. Set `LSVIRTUALENVS_COLOR_ALWAYS=1` for
-  colored output all the time
-- Add GolangCI-Lint checker
-
 
 ## Requirements
 
@@ -134,16 +127,28 @@ of dockerized version of the application :)
 Build:
 
 ```bash
-$ docker build -t lsvirtualenvs .
+$ docker build -t lsvirtualenvs:latest .
 ```
 
 Run:
 
 ```bash
-$ docker run -i -t lsvirtualenvs lsvirtualenvs
-WORKON_HOME environment variable doesn't exists in your environment
+$ docker run --read-only -v "${WORKON_HOME}":/venvs --env WORKON_HOME=/venvs lsvirtualenvs:latest
+$ docker run --read-only -v "${WORKON_HOME}":/venvs --env WORKON_HOME=/venvs lsvirtualenvs:latest -h
+```
 
-$ docker run -i -t lsvirtualenvs lsvirtualenvs -h
+If you run it from container, currently, it’s not possible to get python
+versions of the existing environments.
+
+---
+
+## Docker (docker hub)
+
+https://hub.docker.com/r/vigo/lsvirtualenvs/
+
+```bash
+# latest
+docker run --read-only -v "${WORKON_HOME}":/venvs --env WORKON_HOME=/venvs vigo/lsvirtualenvs -h
 ```
 
 ---
@@ -161,6 +166,12 @@ rake test[verbose]      # run tests
 ---
 
 ## Change Log
+
+**2022-02-15**
+
+- Add `LSVIRTUALENVS_COLOR_ALWAYS` environment variable check. Set `LSVIRTUALENVS_COLOR_ALWAYS=1` for
+  colored output all the time
+- Add GolangCI-Lint checker
 
 **2021-05-09**
 
