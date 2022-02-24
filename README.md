@@ -167,6 +167,11 @@ rake test[verbose]      # run tests
 
 ## Change Log
 
+**2022-02-24**
+
+- `Dockerfile` is lint-free now!
+- `lsvirtualenvs` runs perfectly from container now!
+
 **2022-02-15**
 
 - Add `LSVIRTUALENVS_COLOR_ALWAYS` environment variable check. Set `LSVIRTUALENVS_COLOR_ALWAYS=1` for
