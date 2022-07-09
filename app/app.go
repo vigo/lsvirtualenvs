@@ -18,7 +18,7 @@ import (
 	"golang.org/x/text/message"
 )
 
-const version = "0.2.2"
+const version = "0.2.3"
 
 var (
 	errWorkonHomeEnvNotExists = errors.New("you need to set WORKON_HOME environment variable")
