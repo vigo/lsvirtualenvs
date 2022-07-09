@@ -126,7 +126,7 @@ func (c *CLIApplication) Run() error {
 				if insideContainer {
 					c <- []string{dirName, "n/a"}
 				} else {
-					pyVersion, err := exec.Command("bash", "-c", cmd).Output()
+					pyVersion, err := exec.Command("bash", "-c", cmd).Output() //nolint:gosec
 					if err == nil {
 						pyVersion = bytes.TrimSpace(pyVersion)
 						c <- []string{dirName, strings.Split(string(pyVersion), " ")[1]}
