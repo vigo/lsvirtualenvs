@@ -5,7 +5,8 @@
 [![Build Status](https://travis-ci.org/vigo/lsvirtualenvs.svg?branch=main)](https://travis-ci.org/vigo/lsvirtualenvs)
 ![Go Build Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/go.yml/badge.svg)
 ![GolangCI-Lint Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/golang-lint.yml/badge.svg)
-![Docker Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/docker.yml/badge.svg)
+![Docker Lint Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/docker-lint.yml/badge.svg)
+![Docker Build Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/dockerhub.yml/badge.svg)
 
 
 # List Virtual Environments for `virtualenvwrapper`
@@ -120,36 +121,19 @@ $ go test -v ./...
 
 ## Docker
 
+https://hub.docker.com/r/vigo/lsvirtualenvs/
+
 Note that, `lsvirtualenvs` requires `WORKON_HOME` environment variable which is
 not available inside of the docker container :) This is just an example / concept
 of dockerized version of the application :)
 
-Build:
-
 ```bash
-$ docker build -t lsvirtualenvs:latest .
-```
-
-Run:
-
-```bash
-$ docker run --read-only -v "${WORKON_HOME}":/venvs --env WORKON_HOME=/venvs lsvirtualenvs:latest
-$ docker run --read-only -v "${WORKON_HOME}":/venvs --env WORKON_HOME=/venvs lsvirtualenvs:latest -h
+$ docker run --read-only -v "${WORKON_HOME}":/venvs --env WORKON_HOME=/venvs vigo/lsvirtualenvs
+$ docker run --read-only -v "${WORKON_HOME}":/venvs --env WORKON_HOME=/venvs vigo/lsvirtualenvs -h
 ```
 
 If you run it from container, currently, it’s not possible to get python
 versions of the existing environments.
-
----
-
-## Docker (docker hub)
-
-https://hub.docker.com/r/vigo/lsvirtualenvs/
-
-```bash
-# latest
-docker run --read-only -v "${WORKON_HOME}":/venvs --env WORKON_HOME=/venvs vigo/lsvirtualenvs -h
-```
 
 ---
 
@@ -159,13 +143,19 @@ docker run --read-only -v "${WORKON_HOME}":/venvs --env WORKON_HOME=/venvs vigo/
 $ rake -T
 
 rake default            # show avaliable tasks (default task)
-rake release[revision]  # Release new version major,minor,patch, default: patch
+rake docker:lint        # lint Dockerfile
+rake release[revision]  # release new version major,minor,patch, default: patch
 rake test[verbose]      # run tests
 ```
 
 ---
 
 ## Change Log
+
+**2022-07-09**
+
+- Add docker build/push action
+- Fix docker platform issue
 
 **2022-02-24**
 
