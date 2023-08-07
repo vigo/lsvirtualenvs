@@ -7,7 +7,7 @@
 ![GolangCI-Lint Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/golang-lint.yml/badge.svg)
 ![Docker Lint Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/docker-lint.yml/badge.svg)
 ![Docker Build Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/dockerhub.yml/badge.svg)
-
+![Powered by Rake](https://img.shields.io/badge/powered_by-rake-blue?logo=ruby)
 
 # List Virtual Environments for `virtualenvwrapper`
 
