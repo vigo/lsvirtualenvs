@@ -1,18 +1,20 @@
-name: golangci-lint
+name: Golang CI Linter
+
 on:
-  push:
-    branches:
-    - main
-    - ST-*
   pull_request:
+
+concurrency:
+  group: golangci-lint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   golangci:
-    name: lint
+    name: golangci linter
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
           version: latest
+          args: --timeout=5m
