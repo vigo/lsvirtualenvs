@@ -1,4 +1,4 @@
-![Version](https://img.shields.io/badge/version-0.3.2-yellow.svg)
+![Version](https://img.shields.io/badge/version-0.3.3-yellow.svg)
 ![Go](https://img.shields.io/badge/golang-1.16.3-black.svg)
 [![Documentation](https://godoc.org/github.com/vigo/lsvirtualenvs?status.svg)](https://pkg.go.dev/github.com/vigo/lsvirtualenvs)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vigo/lsvirtualenvs)](https://goreportcard.com/report/github.com/vigo/lsvirtualenvs)
