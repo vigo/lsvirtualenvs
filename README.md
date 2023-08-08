@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.org/vigo/lsvirtualenvs.svg?branch=main)](https://travis-ci.org/vigo/lsvirtualenvs)
 ![Go Build Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/go.yml/badge.svg)
 ![GolangCI-Lint Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/golang-lint.yml/badge.svg)
-![Docker Lint Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/docker-lint.yml/badge.svg)
+[![Verify Docker Build](https://github.com/vigo/lsvirtualenvs/actions/workflows/verify-docker-build.yml/badge.svg)](https://github.com/vigo/lsvirtualenvs/actions/workflows/verify-docker-build.yml)
 ![Docker Build Status](https://github.com/vigo/lsvirtualenvs/actions/workflows/dockerhub.yml/badge.svg)
 [![codecov](https://codecov.io/gh/vigo/lsvirtualenvs/branch/main/graph/badge.svg?token=qHG6ergs9n)](https://codecov.io/gh/vigo/lsvirtualenvs)
 ![Powered by Rake](https://img.shields.io/badge/powered_by-rake-blue?logo=ruby)
